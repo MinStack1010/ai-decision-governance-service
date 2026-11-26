@@ -54,12 +54,17 @@ export class DemoMonitoringService implements MonitoringService {
   updateWorkspace(workspace: Workspace) {
     this.workspace = workspace;
     const valid = new Set(workspace.systems.map((s) => s.id));
-    this.snapshot = {
+    const filtered = {
       ...this.snapshot,
       connections: this.snapshot.connections.filter((c) => valid.has(c.systemId)),
       events: this.snapshot.events.filter((e) => valid.has(e.systemId)),
       alerts: this.snapshot.alerts.filter((a) => valid.has(a.systemId)),
     };
+    // A workspace can be restored or changed while this long-lived service instance
+    // is still cached. Re-seed the local monitoring view when its registered systems
+    // no longer have any connection records; otherwise all dashboard sections appear
+    // empty even though the registry contains systems.
+    this.snapshot = filtered.connections.length || !workspace.systems.length ? filtered : this.seed();
   }
   private seed(): MonitoringSnapshot {
     const now = this.clock(),
@@ -116,44 +121,127 @@ export class DemoMonitoringService implements MonitoringService {
       updatedAt: iso,
     }));
     let snapshot: MonitoringSnapshot = { connections, events: [], alerts: [], updatedAt: iso };
-    for (let i = 0; i < 24; i++) {
-      const c = connections[i % Math.min(3, connections.length)];
+
+    // Keep the local workspace useful even when no provider is connected. The monitoring
+    // screens are intentionally populated with clearly-labelled synthetic telemetry so
+    // every KPI, filter, detail tab and alert state can be exercised end-to-end.
+    const activeConnections = connections.slice(0, Math.min(4, connections.length));
+    for (let i = 0; i < 36; i++) {
+      const c = activeConnections[i % activeConnections.length];
       if (!c) break;
-      const event = this.decisionEvent(
-        c,
-        `seed-${i}`,
-        new Date(now - (24 - i) * 30000).toISOString(),
-        i % 11 !== 0,
-        120 + (i % 7) * 18,
-      );
-      snapshot = applyEvent(snapshot, event, this.org);
-    }
-    const exception = this.workspace.assessments.find((a) =>
-      a.findings.some((f) => f.outcome === 'noncompliant'),
-    );
-    const c = connections.find((c) => c.systemId === exception?.systemId);
-    if (c && exception) {
       snapshot = applyEvent(
         snapshot,
-        {
-          id: `${this.org}-seed-violation`,
-          type: 'COMPLIANCE_VIOLATION_DETECTED',
-          organizationId: this.org,
-          systemId: c.systemId,
-          connectionId: c.id,
-          timestamp: new Date(now - 20000).toISOString(),
-          severity: 'ERROR',
-          description: bi(
-            'Synthetic control exception requires evidence review.',
-            'Une exception synthétique nécessite un examen des preuves.',
-          ),
-          relatedResourceType: 'assessment',
-          relatedResourceId: exception.id,
-          correlationId: `demo-${this.org}-control`,
-        },
+        this.decisionEvent(
+          c,
+          `seed-${i}`,
+          new Date(now - 14 * 60000 + i * 23000).toISOString(),
+          i % 9 !== 0,
+          118 + (i % 8) * 21,
+        ),
         this.org,
       );
     }
+
+    const exception = this.workspace.assessments.find((a) =>
+      a.findings.some((f) => f.outcome === 'noncompliant'),
+    );
+    const evidence = this.workspace.evidence[0];
+    const policy = this.workspace.policies[0];
+    const approved = this.workspace.assessments.find((a) => a.state === 'approved');
+    const eventPlan: Array<{
+      type: AIConnectionEvent['type'];
+      connection: AIConnection | undefined;
+      severity?: AIConnectionEvent['severity'];
+      relatedResourceId?: string;
+      relatedResourceType?: AIConnectionEvent['relatedResourceType'];
+    }> = [
+      {
+        type: 'CONNECTION_ESTABLISHED',
+        connection: activeConnections[0],
+        relatedResourceType: 'connection',
+      },
+      {
+        type: 'CONNECTION_LOST',
+        connection: activeConnections[3],
+        severity: 'ERROR',
+        relatedResourceType: 'connection',
+      },
+      { type: 'HEARTBEAT_RECEIVED', connection: activeConnections[0] },
+      { type: 'HEARTBEAT_RECEIVED', connection: activeConnections[1] },
+      { type: 'CONNECTOR_SYNC_FAILED', connection: activeConnections[2], severity: 'ERROR' },
+      {
+        type: 'COMPLIANCE_VIOLATION_DETECTED',
+        connection: connections.find((c) => c.systemId === exception?.systemId) || activeConnections[0],
+        severity: 'ERROR',
+        relatedResourceId: exception?.id,
+        relatedResourceType: 'assessment',
+      },
+      {
+        type: 'RISK_THRESHOLD_EXCEEDED',
+        connection: activeConnections[0],
+        severity: 'WARNING',
+        relatedResourceId: activeConnections[0]?.systemId,
+        relatedResourceType: 'risk',
+      },
+      {
+        type: 'EVIDENCE_EXPIRED',
+        connection: activeConnections[1],
+        severity: 'WARNING',
+        relatedResourceId: evidence?.id,
+        relatedResourceType: 'evidence',
+      },
+      {
+        type: 'POLICY_CHANGED',
+        connection: activeConnections[0],
+        relatedResourceId: policy?.id,
+        relatedResourceType: 'policy',
+      },
+      {
+        type: 'REASSESSMENT_REQUIRED',
+        connection: activeConnections[2],
+        severity: 'WARNING',
+        relatedResourceId: activeConnections[2]?.systemId,
+        relatedResourceType: 'impact',
+      },
+      {
+        type: 'HUMAN_REVIEW_COMPLETED',
+        connection: activeConnections[1],
+        relatedResourceId: approved?.id,
+        relatedResourceType: 'review',
+      },
+      {
+        type: 'ASSESSMENT_COMPLETED',
+        connection: activeConnections[0],
+        relatedResourceId: approved?.id || exception?.id,
+        relatedResourceType: 'assessment',
+      },
+    ];
+    eventPlan.forEach((plan, i) => {
+      const c = plan.connection;
+      if (!c) return;
+      const relatedResourceId = plan.relatedResourceId || c.id;
+      const type = plan.type;
+      snapshot = applyEvent(
+        snapshot,
+        {
+          id: `${this.org}-seed-${type.toLowerCase()}-${i}`,
+          type,
+          organizationId: this.org,
+          systemId: c.systemId,
+          connectionId: c.id,
+          timestamp: new Date(now - (eventPlan.length - i) * 30000).toISOString(),
+          severity: plan.severity || 'INFO',
+          description: bi(
+            `Synthetic: ${eventLabels[type].en}.`,
+            `Simulation : ${eventLabels[type].fr}.`,
+          ),
+          relatedResourceType: plan.relatedResourceType || 'connection',
+          relatedResourceId,
+          correlationId: `demo-${this.org}-${type.toLowerCase()}-${i}`,
+        },
+        this.org,
+      );
+    });
     return snapshot;
   }
   private decisionEvent(
@@ -450,9 +538,9 @@ export class DemoMonitoringService implements MonitoringService {
     return {
       ...structuredClone(config),
       id: demoConnectionId(this.org, config.systemId),
-      status: 'CONNECTED',
-      lastSuccessfulHealthCheck: now,
-      lastHeartbeat: now,
+      status: 'NOT_CONFIGURED',
+      lastSuccessfulHealthCheck: null,
+      lastHeartbeat: null,
       lastEventReceived: null,
       requestsCount: 0,
       averageLatencyMs: null,
@@ -469,8 +557,8 @@ export class DemoMonitoringService implements MonitoringService {
       connection,
       checkedAt: new Date(this.clock()).toISOString(),
       message: bi(
-        'Simulated configuration test passed; no endpoint was contacted.',
-        'Configuration simulée valide ; aucun point de terminaison contacté.',
+        'Prototype validation completed; no external endpoint was contacted.',
+        'Validation du prototype terminée ; aucun point de terminaison externe contacté.',
       ),
     };
   }

@@ -30,6 +30,21 @@ type Store = {
   ) => void;
   reset: () => void;
 };
+
+/** Keep persisted browser data resilient to duplicate system records created by
+ * an earlier prototype build. System IDs are the identity used by every table,
+ * connection and monitoring record, so only the first record is retained. */
+function normalizeWorkspace(workspace: Workspace): Workspace {
+  const seen = new Set<string>();
+  return {
+    ...workspace,
+    systems: workspace.systems.filter((system) => {
+      if (seen.has(system.id)) return false;
+      seen.add(system.id);
+      return true;
+    }),
+  };
+}
 const Context = createContext<Store | null>(null);
 export function GovernanceProvider({ children }: { children: ReactNode }) {
   const [workspaces, setWorkspaces] = useState<Record<string, Workspace>>({
@@ -47,7 +62,16 @@ export function GovernanceProvider({ children }: { children: ReactNode }) {
       const raw = localStorage.getItem(KEY);
       if (raw) {
         const result = storageSchema.safeParse(JSON.parse(raw));
-        if (result.success) setWorkspaces(result.data.workspaces);
+        if (result.success) {
+          setWorkspaces(
+            Object.fromEntries(
+              Object.entries(result.data.workspaces).map(([workspaceId, workspace]) => [
+                workspaceId,
+                normalizeWorkspace(workspace),
+              ]),
+            ),
+          );
+        }
         else
           setWarning('Saved demo data could not be read. / Données de démonstration illisibles.');
       }
@@ -99,7 +123,8 @@ export function GovernanceProvider({ children }: { children: ReactNode }) {
     setWorkspaces((current) => {
       const draft = structuredClone(current[org] || seedWorkspace(true));
       fn(draft);
-      draft.audit.unshift({
+      const normalized = normalizeWorkspace(draft);
+      normalized.audit.unshift({
         id: `EVT-${crypto.randomUUID().slice(0, 8)}`,
         date: new Date().toISOString(),
         actor: 'Alex Morgan',
@@ -108,7 +133,7 @@ export function GovernanceProvider({ children }: { children: ReactNode }) {
         result: 'Success',
         correlationId: crypto.randomUUID(),
       });
-      return { ...current, [org]: draft };
+      return { ...current, [org]: normalized };
     });
     if (!options?.silent)
       notify('Changes saved in this browser.', 'Modifications enregistrées dans ce navigateur.');

@@ -40,8 +40,8 @@ export function EvidencePage() {
       />
       <Notice>
         {t(
-          'This demo stores evidence references only. Document contents are not uploaded or retained.',
-          'Cette démonstration conserve uniquement les références. Le contenu des documents n’est ni téléversé ni conservé.',
+          'This workspace stores evidence references only. Document contents are not uploaded or retained.',
+          'Cet espace conserve uniquement les références. Le contenu des documents n’est ni téléversé ni conservé.',
         )}
       </Notice>
       <DataTable
@@ -533,8 +533,8 @@ export function AuditLogs() {
       />
       <Notice>
         {t(
-          'Local demonstration history. These browser records are editable and are not a tamper-resistant production audit trail.',
-          'Historique de démonstration local. Ces données sont modifiables dans le navigateur et ne constituent pas un journal de production inviolable.',
+          'Local workspace history. These browser records are editable and are not a tamper-resistant production audit trail.',
+          'Historique local de l’espace. Ces données sont modifiables dans le navigateur et ne constituent pas un journal de production inviolable.',
         )}
       </Notice>
       <DataTable
@@ -683,7 +683,7 @@ export function Integrations() {
               <Button onClick={() => setConfigure(i.id)}>
                 {i.connected
                   ? t('Configure', 'Configurer')
-                  : t('Set up demo', 'Configurer la démo')}
+                  : t('Configure connection', 'Configurer la connexion')}
               </Button>
             </div>
           </div>
@@ -694,7 +694,7 @@ export function Integrations() {
         <Dialog
           open
           onClose={() => setConfigure(null)}
-          title={t('Demo integration settings', 'Paramètres d’intégration de démonstration')}
+          title={t('Integration settings', 'Paramètres d’intégration')}
           description={integration.name}
           footer={
             <>
@@ -709,11 +709,11 @@ export function Integrations() {
                     },
                     bi(
                       integration.connected
-                        ? 'Demo integration disconnected'
-                        : 'Demo integration connected',
+                        ? 'Integration disconnected'
+                        : 'Integration connected',
                       integration.connected
-                        ? 'Intégration de démonstration déconnectée'
-                        : 'Intégration de démonstration connectée',
+                        ? 'Intégration déconnectée'
+                        : 'Intégration connectée',
                     ),
                     integration.id,
                   );
@@ -721,16 +721,16 @@ export function Integrations() {
                 }}
               >
                 {integration.connected
-                  ? t('Disconnect demo', 'Déconnecter la démo')
-                  : t('Enable simulation', 'Activer la simulation')}
+                  ? t('Disconnect', 'Déconnecter')
+                  : t('Enable connection', 'Activer la connexion')}
               </Button>
             </>
           }
         >
           <Notice>
             {t(
-              'Enabling this connection changes local demo state. Model registry sync adds one sample AI system; other connectors record a simulated sync event.',
-              'Cette connexion modifie l’état local. La synchronisation du registre ajoute un système IA exemple ; les autres connecteurs consignent un événement simulé.',
+              'This connection changes workspace state. Model registry synchronization can add an imported AI system; other connectors record synchronization activity.',
+              'Cette connexion modifie l’état de l’espace. La synchronisation du registre peut ajouter un système IA importé ; les autres connecteurs enregistrent l’activité de synchronisation.',
             )}
           </Notice>
         </Dialog>
@@ -837,8 +837,8 @@ export function Reports() {
           </div>
           <p className="small muted">
             {t(
-              'Format: CSV · Generated on demand · Demonstration records',
-              'Format : CSV · Généré à la demande · Données de démonstration',
+              'Format: CSV · Generated on demand · Workspace records',
+              'Format : CSV · Généré à la demande · Données de l’espace',
             )}
           </p>
           <Button variant="primary" className="section-gap" onClick={exportReport}>
@@ -881,9 +881,9 @@ export function SettingsPage() {
           <label htmlFor="settings-workspace">{t('Workspace', 'Espace de travail')}</label>
           <Select id="settings-workspace" value={org} onChange={(e) => setOrg(e.target.value)}>
             <option value="services">
-              {t('Public Services · Demo', 'Services publics · Démo')}
+              {t('Public Services', 'Services publics')}
             </option>
-            <option value="research">{t('Research Lab · Demo', 'Laboratoire · Démo')}</option>
+            <option value="research">{t('Research Lab', 'Laboratoire de recherche')}</option>
           </Select>
         </div>
         <p className="small muted">
@@ -893,7 +893,7 @@ export function SettingsPage() {
           )}
         </p>
         <div className="section-gap">
-          <h2>{t('Demonstration data', 'Données de démonstration')}</h2>
+          <h2>{t('Workspace data', 'Données de l’espace')}</h2>
           <p className="muted section-gap">
             {t(
               'Restore the selected workspace to its initial sample records.',
@@ -901,7 +901,7 @@ export function SettingsPage() {
             )}
           </p>
           <Button className="section-gap" onClick={() => setConfirm(true)}>
-            {t('Reset demo workspace', 'Réinitialiser la démonstration')}
+            {t('Reset workspace data', 'Réinitialiser les données de l’espace')}
           </Button>
         </div>
       </section>
@@ -910,7 +910,7 @@ export function SettingsPage() {
         onClose={() => setConfirm(false)}
         title={t('Reset this workspace?', 'Réinitialiser cet espace ?')}
         description={t(
-          'Local changes in the selected demo workspace will be replaced with the initial sample records.',
+          'Local changes in the selected workspace will be replaced with the initial records.',
           'Les modifications locales de cet espace seront remplacées par les données initiales.',
         )}
         footer={

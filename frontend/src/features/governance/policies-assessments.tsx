@@ -2,7 +2,7 @@
 import { useState, useEffect, useId, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Plus, FileText, Check, GitCompareArrows, Upload } from 'lucide-react';
+import { FileText, Check, GitCompareArrows, Upload, Bot, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useGovernance } from './store';
 import {
   bi,
@@ -14,7 +14,7 @@ import {
   type Outcome,
 } from './model';
 import { requirements } from './fixtures';
-import { addAssessment, reviewFinding, recordDecision } from './workflows';
+import { addAssessment, reviewFinding, recordDecision, applyAutomatedAssessment } from './workflows';
 import { PageHeader, Notice, RecordForm, DateText, useOutcomeFilter } from './shared';
 import { Button } from '@/components/ui/button';
 import { Input, Select } from '@/components/ui/input';
@@ -339,6 +339,8 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
   const [selected, setSelected] = useState<string | null>(null);
   const [editFinding, setEditFinding] = useState<string | null>(null);
   const [decision, setDecision] = useState<'approved' | 'rejected' | null>(null);
+  const [runningSystemId, setRunningSystemId] = useState<string | null>(null);
+  const [engineError, setEngineError] = useState('');
   const filter = useOutcomeFilter();
   const query = useSearchParams().toString();
   useEffect(() => {
@@ -364,6 +366,26 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
   const availableSystems = data.systems.filter(
     (s) => !data.assessments.some((a) => a.systemId === s.id && a.state === 'pending'),
   );
+  async function runAssessment(targetSystemId: string, trigger: 'on_demand' | 'scheduled' | 'change_detected' = 'on_demand') {
+    setRunningSystemId(targetSystemId);
+    setEngineError('');
+    try {
+      const response = await fetch('/api/assessments/run', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ workspace: data, systemId: targetSystemId, trigger }),
+      });
+      const payload = (await response.json()) as { assessment?: Assessment; error?: string };
+      if (!response.ok || !payload.assessment) throw new Error(payload.error || 'Assessment engine failed');
+      mutate((draft) => applyAutomatedAssessment(draft, payload.assessment!), bi('Automated assessment completed', 'Évaluation automatisée terminée'), payload.assessment.id);
+      setSelected(payload.assessment.id);
+      setCreate(false);
+    } catch (error) {
+      setEngineError(error instanceof Error ? error.message : 'Assessment engine failed');
+    } finally {
+      setRunningSystemId(null);
+    }
+  }
   return (
     <>
       <PageHeader
@@ -379,8 +401,8 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
                 'Confirmez les constats et consignez une décision humaine responsable.',
               )
             : t(
-                'Evaluate controls, link evidence, and submit findings for review.',
-                'Évaluez les contrôles, liez les preuves et soumettez les constats à l’examen.',
+                'Run evidence-based AI assessments and send explainable findings for human review.',
+                'Lancez des évaluations IA fondées sur les preuves et soumettez les constats explicables à l’examen humain.',
               )
         }
         action={
@@ -390,8 +412,8 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
               disabled={!availableSystems.length}
               onClick={() => setCreate(true)}
             >
-              <Plus size={16} />
-              {t('New assessment', 'Nouvelle évaluation')}
+              <Bot size={16} />
+              {t('Run AI assessment', 'Lancer l’évaluation IA')}
             </Button>
           )
         }
@@ -407,15 +429,15 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
           <section>
             <h2>{t('Assessment process', 'Processus d’évaluation')}</h2>
             <div className="progress-row">
-              <span>{t('1. Review evidence', '1. Examiner les preuves')}</span>
-              <span className="small muted">{t('System owner', 'Responsable du système')}</span>
+              <span>{t('1. Collect data and evidence', '1. Recueillir les données et les preuves')}</span>
+              <span className="small muted">{t('Assessment engine', 'Moteur d’évaluation')}</span>
             </div>
             <div className="progress-row">
-              <span>{t('2. Record findings', '2. Consigner les constats')}</span>
-              <span className="small muted">{t('Assessor', 'Évaluateur')}</span>
+              <span>{t('2. Evaluate controls and generate findings', '2. Évaluer les contrôles et générer les constats')}</span>
+              <span className="small muted">{t('Rules and configured AI provider', 'Règles et fournisseur IA configuré')}</span>
             </div>
             <div className="progress-row">
-              <span>{t('3. Human review', '3. Examen humain')}</span>
+              <span>{t('3. Human review before approval', '3. Examen humain avant approbation')}</span>
               <span className="small muted">{t('Reviewer', 'Responsable de l’examen')}</span>
             </div>
             <p className="small muted section-gap">
@@ -424,7 +446,20 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
                 'Les résultats reflètent les constats consignés. Aucune détermination juridique automatique n’est effectuée.',
               )}
             </p>
+            <Notice>
+              {t(
+                'Assessments collect linked governance data and evidence references automatically. No PDF, CSV or Word upload is required. Human review is still required before approval.',
+                'Les évaluations recueillent automatiquement les données de gouvernance et les références de preuve liées. Aucun téléversement PDF, CSV ou Word n’est requis. Un examen humain reste obligatoire avant l’approbation.',
+              )}
+            </Notice>
           </section>
+        </div>
+      )}
+      {engineError && <Notice>{engineError}</Notice>}
+      {runningSystemId && (
+        <div className="notice" aria-live="polite">
+          <RefreshCw size={16} className="spin" aria-hidden="true" />
+          {t('Assessment engine is collecting data and evaluating controls on the server…', 'Le moteur d’évaluation recueille les données et évalue les contrôles sur le serveur…')}
         </div>
       )}
       <DataTable
@@ -489,6 +524,13 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
           <div className="page-actions">
             <Status value={assessmentOutcome(assessment)} />
             <Status value={assessment.state} />
+            <Button
+              disabled={runningSystemId === assessment.systemId}
+              onClick={() => void runAssessment(assessment.systemId, 'change_detected')}
+            >
+              <RefreshCw size={15} />
+              {t('Reassess system', 'Réévaluer le système')}
+            </Button>
           </div>
           <dl className="metadata-grid">
             <div>
@@ -516,6 +558,17 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
                   {text(f.reason)}
                 </p>
                 <Status value={f.outcome} />
+                <div className="assessment-analysis section-gap">
+                  <p><strong>{t('AI analysis', 'Analyse IA')}</strong></p>
+                  <p className="small">{f.analysis ? text(f.analysis) : t('No automated analysis was recorded.', 'Aucune analyse automatisée n’a été consignée.')}</p>
+                  <p className="small muted">
+                    {t('Confidence', 'Niveau de confiance')}: {f.confidence === null || f.confidence === undefined ? t('Not available: insufficient evidence', 'Non disponible : preuves insuffisantes') : `${Math.round(f.confidence * 100)}%`}
+                  </p>
+                  <p className="small muted">
+                    {t('Evidence sources', 'Sources de preuve')}: {f.evidenceSourceIds?.length ? f.evidenceSourceIds.join(', ') : t('None collected for this control', 'Aucune preuve recueillie pour ce contrôle')}
+                  </p>
+                  {f.recommendedActions?.length ? <p className="small muted">{t('Recommended action', 'Mesure recommandée')}: {text(f.recommendedActions[0])}</p> : null}
+                </div>
                 <p className="small muted" style={{ margin: '8px 0' }}>
                   {t('Evidence references', 'Références de preuve')}:{' '}
                   {refs.length
@@ -563,6 +616,19 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
               )}
             </div>
           )}
+          {assessment.stageEvents?.length ? (
+            <section className="section-gap">
+              <h3>{t('Assessment execution', 'Exécution de l’évaluation')}</h3>
+              <div className="progress-list">
+                {assessment.stageEvents.map((stage) => (
+                  <div className="progress-row" key={stage.stage}>
+                    <span><ShieldCheck size={15} aria-hidden="true" /> {stage.stage.replaceAll('_', ' ')}</span>
+                    <span className="small muted">{stage.completedAt ? t('Completed', 'Terminée') : t('Running', 'En cours')} · {stage.sourceCount} {t('sources', 'sources')}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
           <Link
             href="/evidence"
             className="text-link small section-gap"
@@ -574,10 +640,10 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
       )}
       {create && (
         <RecordForm
-          title={t('New assessment', 'Nouvelle évaluation')}
+          title={t('Run AI assessment', 'Lancer l’évaluation IA')}
           description={t(
-            'Each control begins with insufficient evidence. A reviewer records the findings.',
-            'Chaque contrôle commence avec des preuves insuffisantes. Un responsable consigne les constats.',
+            'The engine collects linked governance data, evaluates controls and creates explainable findings. No document upload is required.',
+            'Le moteur recueille les données de gouvernance liées, évalue les contrôles et crée des constats explicables. Aucun document n’est requis.',
           )}
           fields={[
             {
@@ -589,14 +655,10 @@ export function Assessments({ reviewQueue = false }: { reviewQueue?: boolean }) 
             },
           ]}
           onClose={() => setCreate(false)}
-          submitLabel={t('Create assessment', 'Créer l’évaluation')}
+          submitLabel={t('Run assessment', 'Lancer l’évaluation')}
           onSave={(v) => {
-            mutate(
-              (d) => addAssessment(d, v.system),
-              bi('Assessment created', 'Évaluation créée'),
-              v.system,
-            );
             setSystemId('');
+            void runAssessment(v.system);
           }}
         />
       )}

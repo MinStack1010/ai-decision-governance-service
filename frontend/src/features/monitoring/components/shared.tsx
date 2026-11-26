@@ -62,7 +62,7 @@ export function ModeToolbar() {
           onChange={(e) => setMode(e.target.value as 'demo' | 'live')}
         >
           <option value="demo">
-            {t('Demo · synthetic telemetry', 'Démo · télémétrie synthétique')}
+            {t('Local telemetry', 'Télémétrie locale')}
           </option>
           <option value="live">{t('Live backend', 'Backend en direct')}</option>
         </Select>
@@ -126,7 +126,15 @@ export function ModeToolbar() {
     </>
   );
 }
-export function EventResourceLink({ event, label }: { event: AIConnectionEvent; label?: string }) {
+export function EventResourceLink({
+  event,
+  label,
+  button = false,
+}: {
+  event: AIConnectionEvent;
+  label?: string;
+  button?: boolean;
+}) {
   const { t } = useGovernance();
   const href =
     event.relatedResourceType === 'decision'
@@ -135,7 +143,10 @@ export function EventResourceLink({ event, label }: { event: AIConnectionEvent; 
         )}&system=${encodeURIComponent(event.systemId)}`
       : undefined;
   return (
-    <Link className="text-link small" href={href || eventResourceHref(event)}>
+    <Link
+      className={button ? 'button button-outline' : 'text-link small'}
+      href={href || eventResourceHref(event)}
+    >
       {label || t('Open related record', 'Ouvrir le dossier lié')}
     </Link>
   );

@@ -49,7 +49,17 @@ export class HttpMonitoringService implements MonitoringService {
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
-      if (!response.ok) throw new Error(`Monitoring backend HTTP ${response.status}`);
+      if (!response.ok) {
+        const raw = await response.text();
+        let detail = '';
+        try {
+          const parsed = JSON.parse(raw) as { error?: { code?: string; message?: string } | string };
+          detail = typeof parsed.error === 'string' ? parsed.error : parsed.error?.code || parsed.error?.message || '';
+        } catch {
+          detail = '';
+        }
+        throw new Error(`Monitoring backend HTTP ${response.status}${detail ? `: ${detail}` : ''}`);
+      }
       const envelope = z
         .object({
           data: schema,

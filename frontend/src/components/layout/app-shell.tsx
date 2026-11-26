@@ -110,9 +110,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             onChange={(e) => setOrg(e.target.value)}
           >
             <option value="services">
-              {t('Public Services · Demo', 'Services publics · Démo')}
+              {t('Public Services', 'Services publics')}
             </option>
-            <option value="research">{t('Research Lab · Demo', 'Laboratoire · Démo')}</option>
+            <option value="research">{t('Research Lab', 'Laboratoire de recherche')}</option>
           </select>
         </div>
         <nav
@@ -152,7 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="sidebar-footer">
           <LockKeyhole size={14} aria-hidden="true" />
-          <span>{t('Local demonstration', 'Démonstration locale')}</span>
+              <span>{t('Local workspace', 'Espace local')}</span>
         </div>
       </aside>
     );
@@ -329,7 +329,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         open={profile}
         onClose={() => setProfile(false)}
         title="Alex Morgan"
-        description={t('Demo reviewer · Public Services', 'Responsable de l’examen · Démo')}
+        description={t('Reviewer · Public Services', 'Responsable de l’examen · Services publics')}
       >
         <p className="muted">
           {t(

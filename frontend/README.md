@@ -142,6 +142,14 @@ Demo monitoring is enabled by default and uses deterministic synthetic events. T
 
 The expected live endpoints are documented by the generated monitoring contract. A compatible backend, authentication layer, tenant enforcement, and provider connectors must be supplied before using live mode in production.
 
+## AI-powered assessments
+
+Assessments now run through the same-origin backend route `POST /api/assessments/run`. The request contains the selected workspace snapshot and system identifier; the server-side engine collects registry, policy, linked evidence and audit metadata, evaluates each control, and returns an assessment with provenance, stage events, findings, evidence-source IDs, confidence (or `null` when evidence is insufficient), risks, and recommended remediation.
+
+The deterministic rules engine is the safe default. It uses the five displayed outcomes: Met, Partially Met, Not Met, Unable to Determine, and Not Applicable. It never creates evidence and never assigns confidence when no supporting source is linked. `ASSESSMENT_AI_PROVIDER=openai-compatible` plus a server-only `ASSESSMENT_AI_PROVIDER_URL` can enrich explanations with validated structured JSON; the rules outcome and evidence gate remain authoritative, and an invalid provider response is ignored.
+
+The UI provides Run AI assessment and Reassess system actions, shows the completed execution stages, and exposes analysis, evidence sources, confidence, risks and recommended actions in the finding workspace. Approval remains a human action. This local implementation is not a substitute for a durable database, background-job scheduler, authentication/RBAC, signed provider requests, policy retrieval service, production telemetry gateway or tamper-evident audit store.
+
 ## Design and accessibility
 
 The interface follows a Minimal Enterprise GovTech light theme:

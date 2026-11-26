@@ -212,6 +212,7 @@ export function ConnectionDetail({ id }: { id: string }) {
                     <EventResourceLink
                       event={recent}
                       label={t('View decision trace', 'Voir la trace de décision')}
+                      button
                     />
                   )}
                   {assessment && (
@@ -315,7 +316,7 @@ export function ConnectionDetail({ id }: { id: string }) {
                   <dt>{t('Credentials', 'Identifiants')}</dt>
                   <dd>
                     {mode === 'demo'
-                      ? t('Not collected in demo mode', 'Non collectés en mode démo')
+                      ? t('Not collected in local mode', 'Non collectés en mode local')
                       : connection.endpoint.credentialConfigured
                       ? t('Managed by backend', 'Gérés par le backend')
                       : t('Not configured on backend', 'Non configurés côté backend')}

@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:contrast": "node tests/contrast.mjs",
-    "test:domain": "tsc -p tests/tsconfig.json && node --test .test-build/tests/domain.test.js",
+    "test:domain": "tsc -p tests/tsconfig.json && node --test .test-build/tests/domain.test.js .test-build/tests/assessment-engine.test.js",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/*.{ts,mjs,json}\" \"*.{ts,mjs,json}\"",
     "test:monitoring": "tsc -p tests/tsconfig.json && node --test .test-build/tests/monitoring.test.js",
     "contracts:monitoring": "tsc -p tests/tsconfig.json && node scripts/monitoring-contract.cjs"

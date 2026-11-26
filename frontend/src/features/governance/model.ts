@@ -5,11 +5,11 @@ export const bi = (en: string, fr = en): Text => ({ en, fr });
 export const outcomes = ['compliant', 'partial', 'noncompliant', 'insufficient', 'na'] as const;
 export type Outcome = (typeof outcomes)[number];
 export const outcomeLabels: Record<Outcome, Text> = {
-  compliant: bi('Compliant', 'Conforme'),
-  partial: bi('Partially compliant', 'Partiellement conforme'),
-  noncompliant: bi('Non-compliant', 'Non conforme'),
-  insufficient: bi('Insufficient evidence', 'Preuves insuffisantes'),
-  na: bi('Not applicable', 'Sans objet'),
+  compliant: bi('Met', 'Satisfait'),
+  partial: bi('Partially Met', 'Partiellement satisfait'),
+  noncompliant: bi('Not Met', 'Non satisfait'),
+  insufficient: bi('Unable to Determine', 'Impossible à déterminer'),
+  na: bi('Not Applicable', 'Non applicable'),
 };
 export const systemSchema = z.object({
   id: z.string(),
@@ -50,6 +50,14 @@ export const findingSchema = z.object({
   requirementId: z.string(),
   outcome: z.enum(outcomes),
   reason: textSchema,
+  applicableRequirement: textSchema.optional(),
+  analysis: textSchema.optional(),
+  evidenceSourceIds: z.array(z.string()).optional(),
+  confidence: z.number().min(0).max(1).nullable().optional(),
+  risks: z.array(textSchema).optional(),
+  recommendedActions: z.array(textSchema).optional(),
+  assessedAt: z.string().optional(),
+  humanReviewStatus: z.enum(['not_required', 'pending', 'validated', 'rejected', 'modified']).optional(),
 });
 export type Finding = z.infer<typeof findingSchema>;
 export const assessmentSchema = z.object({
@@ -60,6 +68,22 @@ export const assessmentSchema = z.object({
   state: z.enum(['pending', 'approved', 'rejected']),
   findings: z.array(findingSchema).min(1),
   rationale: z.string().optional(),
+  trigger: z.enum(['on_demand', 'scheduled', 'change_detected']).optional(),
+  engineVersion: z.string().optional(),
+  executionStatus: z.enum(['queued', 'running', 'completed', 'failed']).optional(),
+  stageEvents: z.array(z.object({
+    stage: z.enum(['collecting_data', 'identifying_requirements', 'retrieving_evidence', 'evaluating_controls', 'generating_findings', 'preparing_results']),
+    startedAt: z.string(),
+    completedAt: z.string().nullable(),
+    sourceCount: z.number().int().nonnegative().default(0),
+  })).optional(),
+  sourceSnapshot: z.array(z.object({
+    id: z.string(),
+    sourceType: z.string(),
+    label: z.string(),
+    collectedAt: z.string(),
+    version: z.string(),
+  })).optional(),
 });
 export type Assessment = z.infer<typeof assessmentSchema>;
 export const evidenceSchema = z.object({
