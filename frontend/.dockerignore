@@ -1,0 +1,9 @@
+node_modules
+.next
+.test-build
+test-results
+playwright-report
+coverage
+.DS_Store
+npm-debug.log*
+*.local
