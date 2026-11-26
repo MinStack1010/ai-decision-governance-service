@@ -1,0 +1,5 @@
+Repository script inspection:
+- npm run lint: script not defined
+- npm test: script not defined
+- npm run test:coverage: script not defined
+- Backend test command: not applicable; no backend source or package was found

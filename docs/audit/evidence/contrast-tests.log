@@ -1,0 +1,3 @@
+$ npm run test:contrast
+60/60 contrast pairs passed.
+EXIT 0

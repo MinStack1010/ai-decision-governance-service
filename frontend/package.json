@@ -1,0 +1,42 @@
+{
+  "name": "ai-governance-hub-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:contrast": "node tests/contrast.mjs",
+    "test:domain": "tsc -p tests/tsconfig.json && node --test .test-build/tests/domain.test.js",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/*.{ts,mjs,json}\" \"*.{ts,mjs,json}\"",
+    "test:monitoring": "tsc -p tests/tsconfig.json && node --test .test-build/tests/monitoring.test.js",
+    "contracts:monitoring": "tsc -p tests/tsconfig.json && node scripts/monitoring-contract.cjs"
+  },
+  "dependencies": {
+    "clsx": "2.1.1",
+    "lucide-react": "0.577.0",
+    "next": "16.3.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.19.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "axe-core": "4.13.0",
+    "prettier": "2.8.8",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "overrides": {
+    "playwright-core": "1.60.0"
+  }
+}

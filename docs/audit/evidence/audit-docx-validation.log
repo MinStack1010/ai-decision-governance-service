@@ -1,0 +1,2 @@
+$ textutil -convert txt -stdout docs/audit/Phase_2_Code_and_Test_Evidence_Audit.docx
+RESULT: readable Microsoft Word 2007+ document; executive summary and sections extracted successfully.

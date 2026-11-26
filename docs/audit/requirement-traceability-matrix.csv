@@ -1,0 +1,11 @@
+claim_id,section,government_requirement,source_evidence,backend_api_db,test_evidence,implementation_status,verification_status,claim_status,next_task
+Q1A-001,1a/E1,continuous alignment and affected systems,fixtures.ts;workflows.ts;impact UI,None,16 domain tests queue only,MOCK_WORKFLOW_IMPLEMENTED,UNIT_TEST_VERIFIED,PARTIALLY_SUPPORTED,versioned policy-control graph and impact API
+Q1A-003,1a/E2,standards-based APIs/connectors,http-service.ts;sse-transport.ts;OpenAPI,None,34 monitoring contract tests,DESIGN_ONLY,UNIT_TEST_VERIFIED,PROPOSED_FUTURE_CAPABILITY,FastAPI and connector sandboxes
+Q1A-004,1a/E3,restricted access residency retention deletion,local org selector,None,demo filtering only,UI_ONLY,UNIT_TEST_VERIFIED,PROPOSED_FUTURE_CAPABILITY,OIDC RBAC ABAC RLS lifecycle jobs
+Q1A-005,1a/E4,five outcomes explanations,model.ts;fixtures.ts;review UI,None,domain outcome tests,MOCK_WORKFLOW_IMPLEMENTED,UNIT_TEST_VERIFIED,PARTIALLY_SUPPORTED,UNKNOWN certainty anchors framework data
+Q1A-006,1a/E4-E5,evidence approvals remediation audit,fixtures.ts;store.tsx;workflows.ts,None,authored E2E blocked,MOCK_WORKFLOW_IMPLEMENTED,TEST_EXISTS_NOT_EXECUTED,PARTIALLY_SUPPORTED,durable artifact provenance authorization
+Q1A-007,1a/E6,risk and decision trace,monitoring types/demo,None,synthetic event tests,MOCK_DATA_ONLY,UNIT_TEST_VERIFIED,PROPOSED_FUTURE_CAPABILITY,real telemetry evaluator datasets
+Q1B-001,1b/A1,portable deployment,None,None,None,NOT_IMPLEMENTED,NOT_TESTED,PROPOSED_FUTURE_CAPABILITY,OCI and two environment evidence
+Q1B-002,1b/A2,bilingual UI docs reports workflows,model.ts;app-shell.tsx,None,authored E2E blocked,PARTIALLY_IMPLEMENTED,TEST_EXISTS_NOT_EXECUTED,PARTIALLY_SUPPORTED,translation inventory rendered tests
+Q1B-003,1b/A3,multi-tenant governance,store.tsx;fixtures.ts,None,domain isolation test,MOCK_DATA_ONLY,UNIT_TEST_VERIFIED,PARTIALLY_SUPPORTED,server authorization and DB isolation
+Q1B-004,1b/A4,reports alerts notifications,CSV helpers;demo integrations,None,authored E2E blocked,MOCK_WORKFLOW_IMPLEMENTED,TEST_EXISTS_NOT_EXECUTED,PARTIALLY_SUPPORTED,report job and ticket adapters

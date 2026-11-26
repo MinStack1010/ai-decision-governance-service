@@ -1,0 +1,4 @@
+$ npm run test:monitoring
+34 tests, 34 passed, 0 failed, 0 skipped
+Duration: 179.540 ms
+EXIT 0

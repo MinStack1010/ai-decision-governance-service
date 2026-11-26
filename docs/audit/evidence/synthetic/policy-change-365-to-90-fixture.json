@@ -1,0 +1,73 @@
+{
+  "fixture_id": "AUDIT-E1-001",
+  "classification": "synthetic_audit_fixture",
+  "purpose": "Exercise the Phase 2 policy-impact scenario without changing product source or production data.",
+  "systems": [
+    {
+      "id": "SYS-A",
+      "name": "Application Review AI",
+      "purpose": "Supports administrative application review",
+      "policy_scope": ["P-01"],
+      "expected_affected": true
+    },
+    {
+      "id": "SYS-B",
+      "name": "Document Search AI",
+      "purpose": "Internal document search only",
+      "policy_scope": [],
+      "expected_affected": false
+    },
+    {
+      "id": "SYS-C",
+      "name": "Benefits Triage AI",
+      "purpose": "Prioritizes cases for human review",
+      "policy_scope": ["P-02"],
+      "expected_affected": false
+    }
+  ],
+  "policy_versions": [
+    {
+      "id": "P-01:v1",
+      "policy_id": "P-01",
+      "review_interval_days": 365,
+      "requirements": ["R-01"]
+    },
+    {
+      "id": "P-01:v2",
+      "policy_id": "P-01",
+      "review_interval_days": 90,
+      "requirements": ["R-01"]
+    }
+  ],
+  "mappings": [
+    { "requirement_id": "R-01", "control_id": "CTRL-RISK", "system_id": "SYS-A" }
+  ],
+  "evidence": [
+    {
+      "id": "EV-01:v1",
+      "system_id": "SYS-A",
+      "requirement_id": "R-01",
+      "observed_at": "2026-07-27T12:00:00Z",
+      "age_days_at_policy_change": 120,
+      "valid": true,
+      "approved_by": "synthetic-reviewer",
+      "sha256": "synthetic-sha256-evidence-01"
+    }
+  ],
+  "policy_change": {
+    "from": "P-01:v1",
+    "to": "P-01:v2",
+    "changed_requirement": "R-01",
+    "changed_field": "review_interval_days",
+    "published_at": "2026-11-24T12:00:00Z"
+  },
+  "expected": {
+    "affected_systems": ["SYS-A"],
+    "unaffected_systems": ["SYS-B", "SYS-C"],
+    "old_assessment_preserved": true,
+    "new_assessment_status": "NOT_MET",
+    "decision_rule": "evidence_age_days <= review_interval_days",
+    "decision_explanation": "120 > 90",
+    "reassessment_required": true
+  }
+}

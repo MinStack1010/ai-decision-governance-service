@@ -1,0 +1,14 @@
+{
+  "fixture_id": "AUDIT-E1-001",
+  "execution_type": "expected_oracle_only",
+  "executed_against_product_backend": false,
+  "result": "NOT_EXECUTED_PRODUCT_BACKEND",
+  "reason": "The repository contains no FastAPI service, database, policy-impact engine, or executable API for this proposed scenario.",
+  "oracle": {
+    "affected_systems": ["SYS-A"],
+    "unaffected_systems": ["SYS-B", "SYS-C"],
+    "new_assessment_status": "NOT_MET",
+    "old_assessment_preserved": true,
+    "reassessment_required": true
+  }
+}

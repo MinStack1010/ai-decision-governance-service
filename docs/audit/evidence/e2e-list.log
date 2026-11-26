@@ -1,0 +1,4 @@
+$ npm run test:e2e -- --list
+Total: 113 tests in 2 files
+This command only enumerates tests; it does not execute them.
+EXIT 0

@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "outDir": "../.test-build",
+    "rootDir": "..",
+    "plugins": [],
+    "paths": {}
+  },
+  "include": ["domain.test.ts", "monitoring.test.ts"],
+  "exclude": ["../node_modules", "../.test-build"]
+}

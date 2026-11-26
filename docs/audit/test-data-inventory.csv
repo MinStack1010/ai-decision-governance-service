@@ -1,0 +1,8 @@
+dataset,path,format,record_count,module,classification,expected_output,coverage,limitation
+Governance services workspace,frontend/src/features/governance/fixtures.ts,TypeScript,8 systems + 3 policies + 5 requirements + 6 assessments + 3 evidence + 3 tasks + 3 audit,governance,SYNTHETIC,domain fixtures validate and render,No versions controls database or UNKNOWN
+Research workspace,frontend/src/features/governance/fixtures.ts,TypeScript,0 systems + 3 policies,multitenancy,SYNTHETIC,empty tenant remains isolated in browser,No server isolation
+Monitoring demo connections,frontend/src/features/monitoring/services/demo-service.ts,TypeScript,7 connections,monitoring,SYNTHETIC,six states and provider labels,No endpoint contacted
+Monitoring demo events,frontend/src/features/monitoring/services/demo-service.ts,TypeScript,24 seeded decisions plus timer events,monitoring,SYNTHETIC,summary filters dedup and links,No real telemetry
+Monitoring schemas,frontend/src/features/monitoring/schemas/index.ts,Zod,6 schema groups,API contract,SYNTHETIC,payload shape validation,No producer backend
+E1 policy change fixture,docs/audit/evidence/synthetic/policy-change-365-to-90-fixture.json,JSON,3 systems + 2 versions + 1 mapping + 1 evidence,impact audit,SYNTHETIC,affected SYS-A and NOT_MET,Not executed by product backend
+Browser local state,frontend/src/features/governance/store.tsx,localStorage,variable,governance,SYNTHETIC,user-entered records survive reload,No database durability or multi-user consistency

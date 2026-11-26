@@ -1,0 +1,4 @@
+$ npm run test:e2e
+RESULT: BLOCKED / NOT PASSED
+The Playwright webServer could not complete local runtime verification. The environment reported repeated Watchpack EMFILE (too many open files) errors while starting Next dev and repeatedly deleted .next/dev. The run was interrupted after the server failed to become stable.
+No E2E test is counted as passed.
