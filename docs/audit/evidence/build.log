@@ -1,7 +1,0 @@
-$ npm run build
-Next.js 16.3.8 (webpack)
-Compiled successfully
-Running TypeScript: complete
-Generating static pages: 18/18
-Routes: /, /_not-found, /[module], /monitoring/connections/[id], /monitoring/incidents/[id]
-EXIT 0
