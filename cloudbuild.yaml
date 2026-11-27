@@ -1,0 +1,49 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--no-cache'
+      - '-t'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:$COMMIT_SHA'
+      - '-t'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:latest'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - 'frontend'
+    id: 'Build'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:$COMMIT_SHA'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:latest'
+    id: 'Push'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'ai-governance-hub'
+      - '--image'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:$COMMIT_SHA'
+      - '--region'
+      - '$_DEPLOY_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'NEXT_PUBLIC_MONITORING_MODE=demo,NEXT_PUBLIC_MONITORING_API_BASE_URL=/api/v1/monitoring,ASSESSMENT_AI_PROVIDER=rules'
+      - '--quiet'
+    id: 'Deploy'
+
+substitutions:
+  _AR_HOSTNAME: asia-southeast1-docker.pkg.dev
+  _DEPLOY_REGION: asia-southeast1
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+images:
+  - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:$COMMIT_SHA'
+  - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:latest'
