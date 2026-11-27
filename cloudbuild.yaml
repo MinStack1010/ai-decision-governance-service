@@ -16,8 +16,13 @@ steps:
     args:
       - 'push'
       - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:$COMMIT_SHA'
-      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:latest'
     id: 'Push'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_AR_HOSTNAME/$PROJECT_ID/ai-governance-repo/ai-governance-hub:latest'
+    id: 'PushLatest'
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: 'gcloud'
